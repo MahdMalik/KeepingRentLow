@@ -1,13 +1,19 @@
 #include <stdint.h>
 #include <string.h>
+#include <cstdio>
 #include "usb_setup.h"
-
+#include "ff.h"
+#include "diskio.h"
+#include "spi_setup.h"
+#include "misc_setup.h"
 
 // ==========================================
 // MAIN EXECUTION SPACE
 // ==========================================
 int main(void) {
+
 	HAL_Init();
+
 	SystemClock_Config();
 	SystemCoreClockUpdate();
 
@@ -24,6 +30,29 @@ int main(void) {
 	uint32_t last_blink_time = 0;
 	uint32_t last_tx_time = 0;
 
+	while (!tud_cdc_connected())
+	{
+	    tud_task();  // must keep USB stack alive
+	}
+
+	SpiInit();
+
+	uint8_t result = SetupSdCard();
+
+	PrintFunction(true, "Result was: %02X\r\n", result);
+
+	HAL_Delay(10);
+
+	uint8_t readData[512];
+	if(ReadBlock(0, readData))
+	{
+		PrintFunction(true, "Read data successfully!\r\n");
+	}
+	else
+	{
+		PrintFunction(true, "Read data failed!\r\n");
+	}
+
 	for(;;) {
 		tud_task(); // Keeps USB stack actively processing events
 
@@ -35,13 +64,11 @@ int main(void) {
 			HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
 		}
 
-		// Transmit serial test message if terminal is connected
-		if (tud_cdc_connected()) {
-			if (current_time - last_tx_time >= 1000) {
-				last_tx_time = current_time;
-				tud_cdc_write_str("Hello World over TinyUSB!\r\n");
-				tud_cdc_write_flush();
-			}
+		if(current_time - last_tx_time >= 1000)
+		{
+			last_tx_time = current_time;
+			uint8_t returnedData = SendTest();
+			PrintFunction(true, "Next bit read is this: %02X\r\n", returnedData);
 		}
 	}
 }

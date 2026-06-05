@@ -52,10 +52,12 @@ set (RUNTIME_LIBRARY_SYSCALLS "--specs=nosys.specs")
 set (PROJECT_SOURCES
 	# LIST SOURCE FILES HERE
 	Startup/startup_stm32f411ceux.s
-	Sources/main.cpp                 # 1. CHANGED: Renamed from .c to .cpp
+	Sources/main.cpp
 	Include/syscalls.c
 	Sources/usb_setup.c
 	Include/sysmem.c
+	Sources/spi_setup.c
+	Sources/misc_setup.c
 	
 	
 	Libraries/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.c
@@ -64,6 +66,7 @@ set (PROJECT_SOURCES
 	Libraries/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_gpio.c
 	Libraries/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_uart.c
 	Libraries/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma.c
+	Libraries/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_spi.c
 	
 	# TinyUSB Core Stack Files
     Libraries/TinyUSB/tusb.c
@@ -74,7 +77,11 @@ set (PROJECT_SOURCES
     Libraries/TinyUSB/class/cdc/cdc_device.c
     Libraries/TinyUSB/portable/synopsys/dwc2/dcd_dwc2.c
     Libraries/TinyUSB/portable/synopsys/dwc2/dwc2_common.c
-       	)
+    
+    # fat fs stuff
+	Libraries/fat-fs/ff.c
+	Libraries/fat-fs/diskio.c    
+    )
 
 set (PROJECT_DEFINES
 	# LIST COMPILER DEFINITIONS HERE
@@ -92,6 +99,9 @@ set (PROJECT_INCLUDES
     "Libraries/TinyUSB"
     "Libraries/TinyUSB/device"
     "Libraries/TinyUSB/common"
+    "Libraries/fat-fs"
+    "Libraries/fat-fs/drivers"
+    "Libraries/fat-fs/option"
     )
 
 

@@ -1,12 +1,18 @@
 #pragma once
 
-#include "../Libraries/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h"
 #include "../Libraries/TinyUSB/tusb.h"
+#include "../Libraries/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h"
+#include <stdio.h>
+#include <stdarg.h>
 
 #define CONFIG_TOTAL_LEN  (TUD_CONFIG_DESC_LEN + TUD_CDC_DESC_LEN)
 #define EPNUM_CDC_NOTIF   0x81
 #define EPNUM_CDC_OUT     0x02
 #define EPNUM_CDC_IN      0x82
+
+#define USB_PORT GPIOC
+
+extern char buffer[100];
 
 
 #ifdef __cplusplus
@@ -26,9 +32,7 @@ uint8_t const * tud_descriptor_configuration_cb(uint8_t index);
 
 uint16_t const* tud_descriptor_string_cb(uint8_t index, uint16_t langid);
 
-void SystemClock_Config(void);
-
-void SetupBlinkPin();
+void PrintFunction(bool flush, const char* fmt, ...);
 
 #ifdef __cplusplus
 }
