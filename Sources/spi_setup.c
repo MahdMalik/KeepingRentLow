@@ -149,18 +149,13 @@ uint8_t SetupSdCard()
 	uint8_t cmd0[] = {0x40, 0x00, 0x00, 0x00, 0x00, 0x95};
 	uint8_t cmd0Output[] = {0x01};
 
-	if(!SendResponseWithExpectedOutput(cmd0, cmd0Output, sizeof(cmd0), sizeof(cmd0Output), false))
-	{
-		return 0xFF;
-	}
+	if(!SendResponseWithExpectedOutput(cmd0, cmd0Output, sizeof(cmd0), sizeof(cmd0Output), false)) return 0xFF;
 
 	uint8_t cmd8[] = {0x48, 0x00, 0x00, 0x01, 0xAA, 0x87};
 	uint8_t cmd8Output[] = {0x01, 0x00, 0x00, 0x01, 0xAA};
 
-	if(!SendResponseWithExpectedOutput(cmd8, cmd8Output, sizeof(cmd8), sizeof(cmd8Output), false))
-	{
-		return 0xFF;
-	}
+	if(!SendResponseWithExpectedOutput(cmd8, cmd8Output, sizeof(cmd8), sizeof(cmd8Output), false)) return 0xFF;
+
 
 	uint8_t cmd55[] = {0x77, 0x00, 0x00, 0x00, 0x00, 0x01};
 	uint8_t cmd55Output[] = {0x01};
@@ -172,14 +167,10 @@ uint8_t SetupSdCard()
 	while(HAL_GetTick() - start_time <= 2000)
 	{
 		tud_task();
-		if(!SendResponseWithExpectedOutput(cmd55, cmd55Output, sizeof(cmd55), sizeof(cmd55Output), false))
-		{
-			return 0xFF;
-		}
+		if(!SendResponseWithExpectedOutput(cmd55, cmd55Output, sizeof(cmd55), sizeof(cmd55Output), false)) return 0xFF;
 
 		if(SendResponseWithExpectedOutput(acmd41, acmd41Output, sizeof(acmd41), sizeof(acmd41Output), false))
 		{
-			PrintFunction(true, "success!\r\n");
 			break;
 		}
 
@@ -187,11 +178,18 @@ uint8_t SetupSdCard()
 	}
 
 	uint8_t cmd58[] = {0x7A, 0x00, 0x00, 0x00, 0x00, 0x01};
-	uint8_t cmd58Output[] = {0x00, 0x80, 0xFF, 0x80, 0x00};
+	uint8_t cmd58Output[] = {0x00, 0xC0, 0xFF, 0x80, 0x00};
 
-	if(!SendResponseWithExpectedOutput(cmd58, cmd58Output, sizeof(cmd58), sizeof(cmd58Output), false))
+	if(!SendResponseWithExpectedOutput(cmd58, cmd58Output, sizeof(cmd58), sizeof(cmd58Output), false)) return 0xFF;
+
+	uint8_t cmd16[] = {0x50, 0x00, 0x00, 0x02, 0x00, 0x01};
+	uint8_t cmd16Output[] = {0x00};
+	if(!SendResponseWithExpectedOutput(cmd16, cmd16Output, sizeof(cmd16), sizeof(cmd16Output), false)) return 0xFF;
+
+	for(int i = 0; i < 25; i++)
 	{
-		return 0xFF;
+		HAL_Delay(10);
+		tud_task();
 	}
 
 	return 0x05;
@@ -203,10 +201,6 @@ bool ReadBlock(uint32_t readAddr, uint8_t* outputBuffer)
 			(readAddr >> 16) & 0xFF, (readAddr >> 8) & 0xFF,
 			readAddr & 0xFF, 0x01};
 
-
-	uint8_t cmd16[] = {0x50, 0x00, 0x00, 0x02, 0x00, 0x01};
-	uint8_t cmd16Output[] = {0x00};
-	if(!SendResponseWithExpectedOutput(cmd16, cmd16Output, sizeof(cmd16), sizeof(cmd16Output), false)) return false;
 
 	SendGarbage();
 	SetCsLow();
@@ -222,6 +216,10 @@ bool ReadBlock(uint32_t readAddr, uint8_t* outputBuffer)
 		PrintFunction(true, "R1 failed, instead got %02X!\r\n", r1Bit);
 		return false;
 	}
+	else
+	{
+//		PrintFunction(true, "R1 passed.\r\n");
+	}
 
 	uint8_t readyToken = 0xFF;
 	WaitForTokenOnTimeout(&readyToken);
@@ -231,9 +229,15 @@ bool ReadBlock(uint32_t readAddr, uint8_t* outputBuffer)
 		PrintFunction(true, "Ready token failed!\r\n");
 		return false;
 	}
+	else
+	{
+//		PrintFunction(true, "ready token passed.\r\n");
+	}
+
 
 	// read dem bytes
 	HAL_SPI_Receive(&hspi1, outputBuffer, 512, 200);
+
 
 	ReadGarbage(2);
 

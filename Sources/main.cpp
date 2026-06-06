@@ -6,6 +6,7 @@
 #include "diskio.h"
 #include "spi_setup.h"
 #include "misc_setup.h"
+#include "sd_driver.h"
 
 // ==========================================
 // MAIN EXECUTION SPACE
@@ -28,7 +29,6 @@ int main(void) {
 	SetupBlinkPin();
 
 	uint32_t last_blink_time = 0;
-	uint32_t last_tx_time = 0;
 
 	while (!tud_cdc_connected())
 	{
@@ -37,21 +37,30 @@ int main(void) {
 
 	SpiInit();
 
-	uint8_t result = SetupSdCard();
+	char sdPath[4];
+	FATFS sdFS;
 
-	PrintFunction(true, "Result was: %02X\r\n", result);
+	FATFS_LinkDriver(&SD_Driver, sdPath);
 
-	HAL_Delay(10);
+	FRESULT fr = f_mount(&sdFS, sdPath, 1);
 
-	uint8_t readData[512];
-	if(ReadBlock(0, readData))
-	{
-		PrintFunction(true, "Read data successfully!\r\n");
+	if (fr != FR_OK) {
+	    PrintFunction(true, "Mount failed: %d\r\n", fr);
+	    return -1;
 	}
-	else
-	{
-		PrintFunction(true, "Read data failed!\r\n");
-	}
+
+    PrintFunction(true, "Mount success!\r\n");
+    FIL file;
+
+    fr = f_open(&file, "SolemnLamentDing.wav", FA_READ);
+    if(fr != FR_OK) {
+        PrintFunction(true, "File open failed: %d\r\n", fr);
+        return -1;
+    }
+
+    PrintFunction(true, "File opened successfully!\r\n");
+
+
 
 	for(;;) {
 		tud_task(); // Keeps USB stack actively processing events
@@ -62,13 +71,6 @@ int main(void) {
 		if (current_time - last_blink_time >= 500) {
 			last_blink_time = current_time;
 			HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
-		}
-
-		if(current_time - last_tx_time >= 1000)
-		{
-			last_tx_time = current_time;
-			uint8_t returnedData = SendTest();
-			PrintFunction(true, "Next bit read is this: %02X\r\n", returnedData);
 		}
 	}
 }

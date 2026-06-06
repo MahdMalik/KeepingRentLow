@@ -58,6 +58,7 @@ set (PROJECT_SOURCES
 	Include/sysmem.c
 	Sources/spi_setup.c
 	Sources/misc_setup.c
+	Sources/sd_driver.c
 	
 	
 	Libraries/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.c
@@ -81,6 +82,8 @@ set (PROJECT_SOURCES
     # fat fs stuff
 	Libraries/fat-fs/ff.c
 	Libraries/fat-fs/diskio.c    
+	Libraries/fat-fs/ff_gen_drv.c
+	Libraries/fat-fs/option/unicode.c
     )
 
 set (PROJECT_DEFINES
