@@ -7,6 +7,7 @@
 #include "spi_setup.h"
 #include "misc_setup.h"
 #include "sd_driver.h"
+#include "i2s_setup.h"
 
 // ==========================================
 // MAIN EXECUTION SPACE
@@ -60,7 +61,7 @@ int main(void) {
 
     PrintFunction(true, "File opened successfully!\r\n");
 
-
+    I2sInit();
 
 	for(;;) {
 		tud_task(); // Keeps USB stack actively processing events

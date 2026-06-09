@@ -1,15 +1,15 @@
 #include "spi_setup.h"
 
-SPI_HandleTypeDef hspi1;
+SPI_HandleTypeDef spi_handle;
 
 void SetCsHigh()
 {
-	HAL_GPIO_WritePin(SPI_CS_PORT, SPI_CS_PIN, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(SPI_PORT, SPI_CS_PIN, GPIO_PIN_SET);
 }
 
 void SetCsLow()
 {
-	HAL_GPIO_WritePin(SPI_CS_PORT, SPI_CS_PIN, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(SPI_PORT, SPI_CS_PIN, GPIO_PIN_RESET);
 }
 
 void SpiInit()
@@ -36,19 +36,19 @@ void SpiInit()
 
 	SetCsHigh();
 
-	hspi1.Instance = SPI1;
-	hspi1.Init.Mode = SPI_MODE_MASTER;
-	hspi1.Init.Direction = SPI_DIRECTION_2LINES;
-	hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
-	hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
-	hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
-	hspi1.Init.NSS = SPI_NSS_SOFT;
-	hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_64;
-	hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
-	hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
-	hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
+	spi_handle.Instance = SPI1;
+	spi_handle.Init.Mode = SPI_MODE_MASTER;
+	spi_handle.Init.Direction = SPI_DIRECTION_2LINES;
+	spi_handle.Init.DataSize = SPI_DATASIZE_8BIT;
+	spi_handle.Init.CLKPolarity = SPI_POLARITY_LOW;
+	spi_handle.Init.CLKPhase = SPI_PHASE_1EDGE;
+	spi_handle.Init.NSS = SPI_NSS_SOFT;
+	spi_handle.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_64;
+	spi_handle.Init.FirstBit = SPI_FIRSTBIT_MSB;
+	spi_handle.Init.TIMode = SPI_TIMODE_DISABLE;
+	spi_handle.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
 
-	HAL_SPI_Init(&hspi1);
+	HAL_SPI_Init(&spi_handle);
 }
 
 uint8_t SendTest()
@@ -57,7 +57,7 @@ uint8_t SendTest()
 	uint8_t rx = 0;
 
 	SetCsLow();
-	HAL_SPI_TransmitReceive(&hspi1, &tx, &rx, 1, 100);
+	HAL_SPI_TransmitReceive(&spi_handle, &tx, &rx, 1, 100);
 	SetCsHigh();
 
 	return rx;
@@ -66,20 +66,20 @@ uint8_t SendTest()
 void SendGarbage()
 {
 	uint8_t dummy = 0xFF;
-	for(int i = 0; i < 10; i++) HAL_SPI_Transmit(&hspi1, &dummy, 1, 100);
+	for(int i = 0; i < 10; i++) HAL_SPI_Transmit(&spi_handle, &dummy, 1, 100);
 }
 
 void ReadGarbage(int numberToRead)
 {
 	uint8_t dummyBuffer = 0xFF;
-	for(int i = 0; i < numberToRead; i++) HAL_SPI_Receive(&hspi1, &dummyBuffer, 1, 100);
+	for(int i = 0; i < numberToRead; i++) HAL_SPI_Receive(&spi_handle, &dummyBuffer, 1, 100);
 }
 
 void ReadGarbageUntilFirstBit(uint8_t* receivedBit)
 {
 	for(int i = 0; i < 8; i++)
 	{
-		HAL_SPI_Receive(&hspi1, receivedBit, 1, 100);
+		HAL_SPI_Receive(&spi_handle, receivedBit, 1, 100);
 		if(*receivedBit != 0xFF)
 		{
 			break;
@@ -92,7 +92,7 @@ void WaitForTokenOnTimeout(uint8_t* receivedBit)
 	uint32_t readStart = HAL_GetTick();
 	while(HAL_GetTick() - readStart < 200)
 	{
-		HAL_SPI_Receive(&hspi1, receivedBit, 1, 1);
+		HAL_SPI_Receive(&spi_handle, receivedBit, 1, 1);
 		if(*receivedBit != 0xFF)
 		{
 			break;
@@ -106,7 +106,7 @@ bool SendResponseWithExpectedOutput(uint8_t* input, uint8_t* expectedOutput, uin
 	SendGarbage();
 
 	SetCsLow();
-	HAL_SPI_Transmit(&hspi1, input, inputSize, 100);
+	HAL_SPI_Transmit(&spi_handle, input, inputSize, 100);
 	uint8_t response = 0xFF;
 
 	ReadGarbageUntilFirstBit(&response);
@@ -123,7 +123,7 @@ bool SendResponseWithExpectedOutput(uint8_t* input, uint8_t* expectedOutput, uin
 
 	for(int i = 1; i < outputSize; i++)
 	{
-		HAL_SPI_Receive(&hspi1, &response, 1, 100);
+		HAL_SPI_Receive(&spi_handle, &response, 1, 100);
 
 		if(printBits) PrintFunction(false, "%02X, ", response);
 
@@ -205,7 +205,7 @@ bool ReadBlock(uint32_t readAddr, uint8_t* outputBuffer)
 	SendGarbage();
 	SetCsLow();
 
-	HAL_SPI_Transmit(&hspi1, cmd17, 6, 100);
+	HAL_SPI_Transmit(&spi_handle, cmd17, 6, 100);
 
 	// first get the r1 bit, 0x00
 	uint8_t r1Bit = 0xFF;
@@ -236,7 +236,7 @@ bool ReadBlock(uint32_t readAddr, uint8_t* outputBuffer)
 
 
 	// read dem bytes
-	HAL_SPI_Receive(&hspi1, outputBuffer, 512, 200);
+	HAL_SPI_Receive(&spi_handle, outputBuffer, 512, 200);
 
 
 	ReadGarbage(2);

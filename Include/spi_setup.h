@@ -16,8 +16,6 @@
 #define SPI_CS_PIN GPIO_PIN_4
 
 #define SPI_PORT GPIOA
-#define SPI_CS_PORT GPIOA
-
 
 #ifdef __cplusplus
 extern "C" {

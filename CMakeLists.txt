@@ -59,6 +59,7 @@ set (PROJECT_SOURCES
 	Sources/spi_setup.c
 	Sources/misc_setup.c
 	Sources/sd_driver.c
+	Sources/i2s_setup.c
 	
 	
 	Libraries/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.c
@@ -68,6 +69,9 @@ set (PROJECT_SOURCES
 	Libraries/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_uart.c
 	Libraries/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma.c
 	Libraries/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_spi.c
+	Libraries/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_i2s.c
+	Libraries/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc_ex.c
+	Libraries/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_i2s_ex.c
 	
 	# TinyUSB Core Stack Files
     Libraries/TinyUSB/tusb.c
